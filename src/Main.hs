@@ -46,7 +46,7 @@ lts8Cfg = PrepConfig
  , forceVersion   = [("integer-gmp", "1.0.0.1")]
  , forceFresh     = [("mtl", "2.2.1"), ("transformers-compat","0.5.1.4")]
  , ghc            = "8.0.2"
- , extraBoot      = []
+ , extraBoot      = ["base-compat"]
  , extraBuild     = []
  , extraBlob      = [qt|
 packages:

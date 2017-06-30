@@ -83,6 +83,7 @@ packages:
 
   stage2:
     - ./boot/old-locale
+    - ./boot/base-compat
     - ./boot/bytestring-builder
     - ./boot/time-locale-compat
     - ./boot/async
@@ -138,10 +139,10 @@ sources:
   # these are only used for development builds
 
   shims-dev:             https://github.com/ghcjs/shims
-  shims-dev-branch:      master
+  shims-dev-branch:      ghc-8.0
 
   ghcjs-boot-dev:        https://github.com/ghcjs/ghcjs-boot
-  ghcjs-boot-dev-branch: master
+  ghcjs-boot-dev-branch: ghc-8.0
 
 
   # build tools for Windows (http url, local tar archive or directory)
