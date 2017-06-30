@@ -1,3 +1,16 @@
+## Just let me make fresh GHCJS-stack source snapshot!
+
+ 1. Clone the repository
+ 2. Go into ghci within the project folder:
+    `stack repl`
+ 3. Enable `OverloadedStrings` extension:
+    `:set -XOverloadedStrings`
+ 4. Configure a desired lts-8.X snapshot, i.e.:
+    `sync (lts8Cfg {checkResolver = return "lts-8.21"})`
+
+The package should be available in folder `archive`.
+Under the hood, this script downloads the latest snapshot of ghcjs from [ghcjs.luite.com](http://ghcjs.luite.com/).
+
 # prepare-ghcjs
 
 It is currently "designed" for one user.
@@ -31,3 +44,5 @@ patch_hackage
 ```
 
 some of them might generate new dependencies in `boot.yaml`
+
+
