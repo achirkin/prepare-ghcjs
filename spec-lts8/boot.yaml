@@ -96,6 +96,7 @@ packages:
     - ./boot/hashable
     - ./boot/mtl
     - ./boot/parallel
+    - ./boot/integer-logarithms
     - ./boot/scientific
     - ./boot/stm
     - ./boot/syb
