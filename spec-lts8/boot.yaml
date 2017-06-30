@@ -83,7 +83,6 @@ packages:
 
   stage2:
     - ./boot/old-locale
-    - ./boot/base-compat
     - ./boot/bytestring-builder
     - ./boot/time-locale-compat
     - ./boot/async
@@ -196,6 +195,7 @@ programs:
   happy:      happy
   git:        git
   autoreconf: autoreconf
+  npm:        npm
 
   # ghcjs-boot has a built-in unpacker for uncompressed tar, this is only used for tar.gz, tar.bz2, tar.xz
   tar:        tar

@@ -151,13 +151,11 @@ sync PrepConfig{..} = do
 
       shell' "tar --exclude=.stack-work -cf boot.tar ghcjs-boot"
       shell' $ "cp -f boot.tar " <> ghcjsVanila <> "/lib/cache/"
-      shell' $ "cp -f boot.tar " <> "/home/m/.stack/programs/x86_64-linux/ghcjs-0.2.1.9008000_ghc-8.0.2/src/lib/cache/boot.tar"
 
       let newName = ghcjsVanila <> "." <> T.pack extra
       shell' ("mv " <> ghcjsVanila <> " " <> newName)
       shell' ("tar --exclude=.stack-work -zcf archive.tar.gz " <> newName)
 
-      shell' ("scp archive.tar.gz ghcjs-host:/var/www/ghcjs/untested/" <> T.pack longFilename <> nameSuffix <> ".tar.gz")
       shell' ("cp archive.tar.gz ../archive/" <> T.pack longFilename <> nameSuffix <> ".tar.gz")
       shell' ("cp archive.tar.gz " <> newName <> "_ghc-"<> ghc <>".tar.gz")
 
