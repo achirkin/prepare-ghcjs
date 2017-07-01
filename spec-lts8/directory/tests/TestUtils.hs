@@ -1,4 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
+#ifdef __GHCJS__
+{-# LANGUAGE JavaScriptFFI#-}
+#endif
 module TestUtils
   ( copyPathRecursive
   , createSymbolicLink
@@ -9,6 +12,9 @@ import Prelude ()
 import System.Directory.Internal.Prelude
 import System.Directory
 import System.FilePath ((</>))
+#ifdef ghcjs_HOST_OS
+import GHCJS.Prim
+#else
 #ifdef mingw32_HOST_OS
 import System.FilePath (takeDirectory)
 import qualified System.Win32 as Win32
@@ -26,6 +32,7 @@ import System.Posix (createSymbolicLink)
 # endif
 foreign import WINAPI unsafe "windows.h CreateSymbolicLinkW"
   c_CreateSymbolicLink :: Ptr CWchar -> Ptr CWchar -> CULong -> IO CUChar
+#endif
 #endif
 
 -- | @'copyPathRecursive' path@ copies an existing file or directory at
@@ -49,7 +56,14 @@ modifyPermissions path modify = do
   permissions <- getPermissions path
   setPermissions path (modify permissions)
 
-#ifdef mingw32_HOST_OS
+#ifdef ghcjs_HOST_OS
+type JSString = JSVal
+foreign import javascript interruptible "h$directory_symlink($1,$2,$c);"               js_createSymbolicLink               :: JSString -> JSString -> IO Int
+createSymbolicLink :: String -> String -> IO ()
+createSymbolicLink target link = 
+  throwErrnoIfMinus1_ "reateSymbolicLink" $
+    js_createSymbolicLink (toJSString target) (toJSString link)
+#elif defined(mingw32_HOST_OS)
 createSymbolicLink :: String -> String -> IO ()
 createSymbolicLink target link =
   (`ioeSetLocation` "createSymbolicLink") `modifyIOError` do

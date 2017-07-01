@@ -5,7 +5,7 @@
 #undef posix_OS
 #endif
 
-#if !(MIN_VERSION_base(4,8,0))
+#if (MIN_VERSION_base(4,8,0))
 -- In base-4.8.0 the Foreign module became Safe
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -123,18 +123,21 @@ import Data.Time.Clock.POSIX
   , utcTimeToPOSIXSeconds
   , POSIXTime
   )
-#ifdef mingw32_HOST_OS
-import qualified System.Win32 as Win32
-#else
-import qualified GHC.Foreign as GHC
-import qualified System.Posix as Posix
-#endif
 
 #ifdef ghcjs_HOST_OS
 import Data.Bits
 import Data.Maybe (catMaybes, listToMaybe)
 import GHCJS.Prim
 import Foreign.C.Error
+#elif defined(mingw32_HOST_OS)
+import qualified System.Win32 as Win32
+#else
+import qualified GHC.Foreign as GHC
+import qualified System.Posix as Posix
+#endif
+
+
+#ifdef ghcjs_HOST_OS
 
 type JSObject = JSVal
 type JSString = JSVal
@@ -154,8 +157,9 @@ foreign import javascript interruptible "h$directory_copyPermissions($1,$2,$c);"
 foreign import javascript interruptible "h$directory_createDirectory($1,$c);"               js_createDirectory               :: JSString -> IO Int
 foreign import javascript interruptible "h$directory_removeDirectory($1,$c);"               js_removeDirectory               :: JSString -> IO Int
 foreign import javascript interruptible "h$directory_removeFile($1,$c);"                    js_removeFile                    :: JSString -> IO Int
-foreign import javascript interruptible "h$directory_renameDirectory($1,$c);"               js_renameDirectory               :: JSString -> JSString -> IO Int
+foreign import javascript interruptible "h$directory_renameDirectory($1,$2,$c);"               js_renameDirectory               :: JSString -> JSString -> IO Int
 foreign import javascript interruptible "h$directory_renameFile($1,$2,$c);"                 js_renameFile                    :: JSString -> JSString -> IO Int
+foreign import javascript interruptible "h$irectory_renamePath($1,$2,$c);"                 js_renamePath                    :: JSString -> JSString -> IO Int
 foreign import javascript unsafe "h$directory_canonicalizePath($1)"              js_canonicalizePath              :: JSString -> IO JSString
 foreign import javascript interruptible "h$directory_findExecutables($1,$c);"               js_findExecutables               :: JSString -> IO JSArray
 foreign import javascript interruptible "h$directory_getDirectoryContents($1,$c);"          js_getDirectoryContents          :: JSString -> IO JSArray
@@ -170,8 +174,13 @@ foreign import javascript interruptible "h$directory_getFileStatus($1,$c);"     
 foreign import javascript interruptible "h$directory_getFileOrSymlinkStatus($1,$c);"        js_getFileOrSymlinkStatus        :: JSString -> IO JSObject
 foreign import javascript unsafe "h$directory_getFileStatusModificationTime($1)" js_getFileStatusModificationTime :: JSObject -> IO Double
 foreign import javascript unsafe "h$directory_getFileStatusAccessTime($1)"       js_getFileStatusAccessTime       :: JSObject -> IO Double
-foreign import javascript unsafe "h$directory_getFileStatusIsDirectory($1)"      js_getFileStatusIsDirectory      :: JSObject -> IO Bool
-foreign import javascript unsafe "h$directory_getFileStatusIsSymbolicLink($1)"   js_getFileStatusIsSymbolicLink   :: JSObject -> IO Bool
+-- for some reason, h$directory_getFileOrSymlinkStatus may return null
+--  for non-existing file, so this is a workaround.
+foreign import javascript unsafe "$1 !== null && h$directory_getFileStatusIsDirectory($1)"      js_getFileStatusIsDirectory      :: JSObject -> IO Bool
+-- for some reason, h$directory_getFileOrSymlinkStatus may return null
+--  for non-existing file, so this is a workaround.
+foreign import javascript unsafe "$1 !== null && h$directory_getFileStatusIsSymbolicLink($1)"   js_getFileStatusIsSymbolicLink   :: JSObject -> IO Bool
+foreign import javascript unsafe "h$directory_getFileStatusSize($1)"   js_getFileStatusSize   :: JSObject -> IO Int
 #endif
 
 
@@ -904,10 +913,15 @@ renamePath :: FilePath                  -- ^ Old path
            -> FilePath                  -- ^ New path
            -> IO ()
 renamePath opath npath = (`ioeAddLocation` "renamePath") `modifyIOError` do
+#if defined(ghcjs_HOST_OS)
+   throwErrnoIfMinus1_ "renamePath" $
+     js_renamePath (toJSString opath) (toJSString npath)
+#else
 #ifdef mingw32_HOST_OS
    Win32.moveFileEx opath npath Win32.mOVEFILE_REPLACE_EXISTING
 #else
    Posix.rename opath npath
+#endif
 #endif
 
 -- | Copy a file with its permissions.  If the destination file already exists,
@@ -922,7 +936,7 @@ copyFile fromFPath toFPath =
     atomicCopyFileContents fromFPath toFPath
       (ignoreIOExceptions . copyPermissions fromFPath)
 
-#ifndef mingw32_HOST_OS
+#ifdef posix_OS
 -- | Truncate the destination file and then copy the contents of the source
 -- file to the destination file.  If the destination file already exists, its
 -- attributes shall remain unchanged.  Otherwise, its attributes are reset to
@@ -1536,7 +1550,10 @@ withCurrentDirectory dir action =
 getFileSize :: FilePath -> IO Integer
 getFileSize path =
   (`ioeAddLocation` "getFileSize") `modifyIOError` do
-#ifdef mingw32_HOST_OS
+#if defined(ghcjs_HOST_OS)
+   (fmap fromIntegral . js_getFileStatusSize =<<
+    throwErrnoIfJSNull "getFileSize" (js_getFileStatus (toJSString path)))
+#elif defined(mingw32_HOST_OS)
     fromIntegral <$> withFileStatus "" path st_size
 #else
     fromIntegral . Posix.fileSize <$> Posix.getFileStatus path
@@ -1549,7 +1566,10 @@ getFileSize path =
 -- @since 1.2.7.0
 doesPathExist :: FilePath -> IO Bool
 doesPathExist path =
-#ifdef mingw32_HOST_OS
+#if defined(ghcjs_HOST_OS)
+   (True <$
+    throwErrnoIfJSNull "doesPathExist" (js_getFileStatus (toJSString path)))
+#elif defined(mingw32_HOST_OS)
   (withFileStatus "" path $ \ _ -> return True)
 #else
   (Posix.getFileStatus path >> return True)
@@ -1767,7 +1787,7 @@ setFileTimes path (atime, mtime) =
 
     setTimes :: (Maybe POSIXTime, Maybe POSIXTime) -> IO ()
 #if defined(ghcjs_HOST_OS)
-    setTimes time =
+    setTimes _ =
       error "fixme: setFileTimes unimplemented for GHCJS"
 #elif defined(mingw32_HOST_OS)
     setTimes (atime', mtime') =

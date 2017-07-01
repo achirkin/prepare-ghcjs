@@ -68,6 +68,7 @@ packages:
  , nameSuffix     = ""
  , overwriteFiles = [ ("ghcjs-base.cabal","ghcjs-boot/ghcjs/ghcjs-base/")
                     , ("boot.yaml", ghcjsVanila <> "/lib/etc/")
+                    , ("shims.tar", ghcjsVanila <> "/lib/cache/")
                     ]
  }
 

@@ -139,7 +139,7 @@ sources:
   # git repositories for the rts and boot libraries
   # these are only used for development builds
 
-  shims-dev:             https://github.com/ghcjs/shims
+  shims-dev:             https://github.com/achirkin/shims
   shims-dev-branch:      ghc-8.0
 
   ghcjs-boot-dev:        https://github.com/ghcjs/ghcjs-boot

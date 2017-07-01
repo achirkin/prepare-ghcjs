@@ -17,14 +17,16 @@ main _t = do
   createDirectoryIfMissing False (addTrailingPathSeparator testdir_a)
   cleanup
 
+-- sorry, this is too much for ghcjs
+#ifndef ghcjs_HOST_OS 
   createDirectoryIfMissing True  (addTrailingPathSeparator testdir_a)
-
   T(inform) "testing for race conditions ..."
   raceCheck1
   T(inform) "testing for race conditions ..."
   raceCheck2
   T(inform) "done."
   cleanup
+#endif
 
   writeFile testdir testdir
   T(expectIOErrorType) () isAlreadyExistsError $
