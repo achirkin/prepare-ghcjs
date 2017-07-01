@@ -41,9 +41,13 @@ lts8Cfg = PrepConfig
  , workdir        = "work-lts8"
  , checkResolver  = lts
  , tag            = "lts8"
- , copyIgnore     = ["ghc", "ghc-boot", "ghc-boot-th", "ghci", "integer-gmp", "Win32"]
- , copyOverride   = ["cabal", "aeson","base", "ghc", "ghc-boot", "ghc-boot-th", "ghci","unix"]
+   -- Just do not mess with these packages (keep the ones from original tar)
+ , copyIgnore     = ["integer-gmp", "Win32"]
+   -- Override these packages from our designated folder and don't mess with them
+ , copyOverride   = ["cabal", "ghci", "aeson", "base", "ghc", "ghc-boot", "ghc-boot-th"
+                    ,"unix","directory","filepath","hashable", "process"]
  , forceVersion   = [("integer-gmp", "1.0.0.1")]
+   -- get packages from repository even if they exist in boot package
  , forceFresh     = [("mtl", "2.2.1"), ("transformers-compat","0.5.1.4"),("old-locale","1.0.0.7")]
  , ghc            = "8.0.2"
  , extraBoot      = [ "old-locale" -- in package originaly, but not hackage version (original depends on base <4.9)
@@ -60,10 +64,6 @@ packages:
   extra-dep: true
   subdirs:
   - haddock-api
-- location:
-    git:  https://github.com/tolysz/Shelly.hs.git
-    commit: e8d6a9d1dbc264a23e900609172202f1887dcd92
-  extra-dep: true
  |]
  , nameSuffix     = ""
  , overwriteFiles = [ ("ghcjs-base.cabal","ghcjs-boot/ghcjs/ghcjs-base/")
@@ -117,6 +117,7 @@ sync PrepConfig{..} = do
       shell' "tar -xf boot.tar"
       shell' "rm -f boot.tar"
 
+      -- pa is a list of packages in original boot.tar without copyIgnore and copyOverride
       pa <- keepPath $ do
           cd "ghcjs-boot/boot"
           (_,b) <- shellStrict "ls -d */" empty
