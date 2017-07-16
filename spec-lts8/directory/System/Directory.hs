@@ -159,7 +159,7 @@ foreign import javascript interruptible "h$directory_removeDirectory($1,$c);"   
 foreign import javascript interruptible "h$directory_removeFile($1,$c);"                    js_removeFile                    :: JSString -> IO Int
 foreign import javascript interruptible "h$directory_renameDirectory($1,$2,$c);"               js_renameDirectory               :: JSString -> JSString -> IO Int
 foreign import javascript interruptible "h$directory_renameFile($1,$2,$c);"                 js_renameFile                    :: JSString -> JSString -> IO Int
-foreign import javascript interruptible "h$irectory_renamePath($1,$2,$c);"                 js_renamePath                    :: JSString -> JSString -> IO Int
+foreign import javascript interruptible "h$directory_renamePath($1,$2,$c);"                 js_renamePath                    :: JSString -> JSString -> IO Int
 foreign import javascript unsafe "h$directory_canonicalizePath($1)"              js_canonicalizePath              :: JSString -> IO JSString
 foreign import javascript interruptible "h$directory_findExecutables($1,$c);"               js_findExecutables               :: JSString -> IO JSArray
 foreign import javascript interruptible "h$directory_getDirectoryContents($1,$c);"          js_getDirectoryContents          :: JSString -> IO JSArray
