@@ -118,7 +118,6 @@ mbFd fun _std (UseHandle hdl) =
       Just fd -> return (x, fd)
       Nothing -> ioError (mkIOError illegalOperationErrorType "createProcess" (Just hdl) Nothing
                    `ioeSetErrorString` "handle is not a file descriptor")
-
 -}
 commandToProcess :: CmdSpec -> IO (FilePath, [String])
 commandToProcess (ShellCommand xs) = do
@@ -178,9 +177,10 @@ createProcess_ fun CreateProcess{ cmdspec = cmdsp,
      fderr <- mbFd fun fd_stderr mb_stderr
      env'  <- maybe (return jsNull) (toJSStrings . concatMap (\(x,y) -> [x,y])) mb_env
      let cwd' = maybe jsNull toJSString mb_cwd
-     (c1,c2) <- case cmdsp of
-       ShellCommand xs    -> return (toJSString xs, jsNull)
-       RawCommand xs args -> (,) (toJSString xs) <$> toJSStrings args
+     let c1 = toJSString cmd
+     c2 <- case args of
+               [] -> return jsNull
+               _  -> toJSStrings args
 
      r <- js_runInteractiveProcess c1 c2 cwd' env' fdin fdout fderr
          mb_close_fds mb_create_group mb_delegate_ctlc

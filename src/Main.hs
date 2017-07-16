@@ -37,7 +37,7 @@ ltsCfg = PrepConfig
  }
 
 lts8Cfg = PrepConfig
- { master         = "ghc-8.0-20170630.tar.gz"
+ { master         = "ghc-8.0-20170716.tar.gz"
  , workdir        = "work-lts8"
  , checkResolver  = lts
  , tag            = "lts8"

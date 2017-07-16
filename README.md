@@ -11,6 +11,17 @@
 The package should be available in folder `archive`.
 Under the hood, this script downloads the latest snapshot of ghcjs from [ghcjs.luite.com](http://ghcjs.luite.com/).
 
+## Terrible bug
+
+For the hell knows which reason ghcjs-boot process based on this package via stack breaks some file names:
+```
+$ colordiff ~/.ghcjs/x86_64-linux-0.2.1.9008021-8.0.2/ghcjs/ghcjs-node ~/.ghcjs/x86_64-linux-0.2.1-8.0.2/ghcjs/ghcjs-node
+Only in ~/.ghcjs/x86_64-linux-0.2.1.9008021-8.0.2/ghcjs/ghcjs-node/node_modules/is-my-json-valid/test/json-schema-draft4: additionalProperties.jso
+Only in ~/.ghcjs/x86_64-linux-0.2.1-8.0.2/ghcjs/ghcjs-node/node_modules/is-my-json-valid/test/json-schema-draft4: additionalProperties.json
+Only in ~/.ghcjs/x86_64-linux-0.2.1.9008021-8.0.2/ghcjs/ghcjs-node/node_modules/jsdom/lib/jsdom/living/navigator: NavigatorConcurrentHardware-impl
+Only in ~/.ghcjs/x86_64-linux-0.2.1-8.0.2/ghcjs/ghcjs-node/node_modules/jsdom/lib/jsdom/living/navigator: NavigatorConcurrentHardware-impl.js
+```
+
 # prepare-ghcjs
 
 It is currently "designed" for one user.

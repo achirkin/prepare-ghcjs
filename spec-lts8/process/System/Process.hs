@@ -5,6 +5,7 @@
 {-# LANGUAGE Trustworthy #-}
 #endif
 {-# LANGUAGE InterruptibleFFI #-}
+
 #ifdef ghcjs_HOST_OS
 {-# LANGUAGE JavaScriptFFI #-}
 #endif
